@@ -2,7 +2,9 @@
 import qrcode
 from PIL import Image
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QMessageBox, QDesktopWidget
+from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import QCoreApplication
 '''
 version：值为1~40的整数，控制二维码的大小（最小值是1，是个12×12的矩阵）。 如果想让程序自动确定，将值设置为 None 并使用 fit 参数即可。
 
@@ -62,17 +64,54 @@ class Myqrcode(object):
         # img.show()
         img.save('createlogo.jpg')
 
+
+class Mywigdet(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initui()
+        pass
+    def initui(self):
+        self.setWindowTitle("qrcode")
+        self.center()
+        self.setWindowIcon(QIcon("icon.jpg"))
+
+        btn = QPushButton('Button', self)
+        print("hint size ", btn.sizeHint())
+        btn.resize(btn.sizeHint())
+        btn.move(50, 50)
+
+        quit_btn = QPushButton('Quit', self)
+        quit_btn.clicked.connect(QCoreApplication.instance().quit)
+        quit_btn.resize(quit_btn.sizeHint())
+        quit_btn.move(200, 200)
+        self.show()
+
+    def closeEvent(self, QCloseEvent):
+        reply = QMessageBox.question(self, '消息', "确认退出", QMessageBox.Yes|QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            QCloseEvent.accept()
+        else:
+            QCloseEvent.ignore()
+
+    def center(self):
+        # 获得窗口
+        qr = self.frameGeometry()
+        # 获得屏幕中心点
+        cp = QDesktopWidget().availableGeometry().center()
+        # 显示到屏幕中心
+        print("center is ", cp)
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
+        self.resize(self.sizeHint())
+
+
         
 if __name__ == '__main__':
+    app = QApplication(sys.argv)
     # qr=qrcode.QRCode(None,error_correction = qrcode.constants.ERROR_CORRECT_L,box_size=10,border=10,)
     qr = Myqrcode()
     # qr.make_qrcode("cxtan", 2)
     qr.high_make_qrcode("cxtan")
-
-    app = QApplication(sys.argv)
-    root = QWidget()
-    root.resize(320, 240)  # The resize() method resizes the widget.
-    root.setWindowTitle("Hello, World!")  # Here we set the title for our window.
-    root.show()  # The show() method displays the widget on the screen.
-    sys.exit(app.exec_())  # Finally, we enter the mainloop of the application.
+    mwigdet = Mywigdet()
+    sys.exit(app.exec_())
     pass
